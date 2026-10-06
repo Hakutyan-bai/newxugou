@@ -17,7 +17,7 @@
     "deploy:dry-run": "wrangler deploy --dry-run",
     "deploy": "wrangler deploy",
     "deploy:production": "wrangler d1 migrations apply xugou_db --remote && wrangler deploy",
-    "ci:check": "pnpm run lint && pnpm run typecheck && pnpm --dir backend test && pnpm run build && pnpm run deploy:dry-run",
+    "ci:check": "pnpm run lint && pnpm run typecheck && pnpm run types:worker:check && pnpm --dir backend test && pnpm run build && pnpm run deploy:dry-run",
     "dev:preview": "pnpm run build && cd backend && pnpm run dev",
     "preview": "cd backend && pnpm run dev",
     "lint": "pnpm --dir backend run lint && pnpm --dir frontend run lint",
