@@ -14,7 +14,6 @@ import PageLoading from "../components/PageLoading";
 
 // 懒加载页面组件
 const Dashboard = lazy(() => import("../pages/Dashboard"));
-const Home = lazy(() => import("../pages/Home"));
 const NotFound = lazy(() => import("../pages/NotFound"));
 
 // 代理页面组件
@@ -214,11 +213,7 @@ const protectedRoutes: RouteObject[] = [
 const publicRoutes: RouteObject[] = [
   {
     path: "/",
-    element: (
-      <Suspense fallback={<PageLoading />}>
-        <Home />
-      </Suspense>
-    ),
+    element: <Navigate to="/status" replace />,
   },
   {
     path: "/status",

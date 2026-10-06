@@ -1,80 +1,29 @@
-name: Deploy to Cloudflare
+name: Validate production bundle
 
 on:
   push:
+    branches: [main]
+  pull_request:
     branches: [main]
   workflow_dispatch:
 
 permissions:
   contents: read
 
-env:
-  NODE_VERSION: "22"
-
 jobs:
-  deploy:
-    name: Build, migrate and deploy
+  validate:
+    name: Lint, test and build
     runs-on: ubuntu-latest
-    environment: production
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
       - uses: pnpm/action-setup@v4
         with:
-          version: 11
+          version: 11.10.0
       - uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: "22"
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - name: Verify Secret Presence
-        env:
-          CF_API_TOKEN: ${{ secrets.XUGOU_CF_API_TOKEN }}
-          CF_ACCOUNT_ID: ${{ secrets.XUGOU_CF_ACCOUNT_ID }}
-          D1_DATABASE_ID: ${{ secrets.XUGOU_D1_DATABASE_ID }}
-          D1_DATABASE_NAME: ${{ secrets.XUGOU_D1_DATABASE_NAME }}
-        run: |
-          for value in CF_API_TOKEN CF_ACCOUNT_ID D1_DATABASE_ID D1_DATABASE_NAME; do
-            if [ -z "${!value}" ]; then
-              echo "Error: Secret $value is not set."
-              exit 1
-            fi
-          done
-      - name: Configure Wrangler
-        env:
-          D1_DATABASE_ID: ${{ secrets.XUGOU_D1_DATABASE_ID }}
-          D1_DATABASE_NAME: ${{ secrets.XUGOU_D1_DATABASE_NAME }}
-        run: |
-          set -euo pipefail
-          umask 077
-          pnpm --dir backend wrangler:render-config -- \
-            --template ../wrangler.toml \
-            --output ../.wrangler.production.toml
-      - name: Build production bundle
-        run: pnpm run build
-      - name: Validate code and regression tests
-        run: |
-          pnpm run lint
-          pnpm run typecheck
-          pnpm --dir backend test
+      - run: pnpm run ci:check
       - name: Verify reproducible Git input
         run: test -z "$(git status --porcelain)"
-      - name: Apply D1 migrations
-        env:
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.XUGOU_CF_ACCOUNT_ID }}
-          CLOUDFLARE_API_TOKEN: ${{ secrets.XUGOU_CF_API_TOKEN }}
-          D1_DATABASE_NAME: ${{ secrets.XUGOU_D1_DATABASE_NAME }}
-        run: |
-          set -euo pipefail
-          pnpm exec wrangler d1 migrations apply "$D1_DATABASE_NAME" --remote -c .wrangler.production.toml
-
-      - name: Deploy Worker
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.XUGOU_CF_API_TOKEN }}
-          accountId: ${{ secrets.XUGOU_CF_ACCOUNT_ID }}
-          command: deploy --config .wrangler.production.toml
-        env:
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.XUGOU_CF_ACCOUNT_ID }}
-          CLOUDFLARE_API_TOKEN: ${{ secrets.XUGOU_CF_API_TOKEN }}

@@ -57,6 +57,8 @@ yarn-error.*
 # --- Environment Variables ---
 # Environment configuration files (DO NOT commit sensitive info!)
 .env
+.dev.vars
+.dev.vars.*
 .env*.local
 /backend/.env
 

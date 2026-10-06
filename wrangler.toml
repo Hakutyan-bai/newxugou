@@ -1,9 +1,13 @@
 name = "xugou-app"
+account_id = "56dad53d1f28e110100cff83b9f735a4"
 main = "backend/src/index.ts"
-compatibility_date = "2026-08-01"
+compatibility_date = "2026-10-06"
 compatibility_flags = ["nodejs_compat"]
-
 minify = true # 生产环境压缩代码
+
+[[routes]]
+pattern = "status.sakuraink.net"
+custom_domain = true
 
 [observability]
 enabled = true
@@ -68,8 +72,8 @@ LATEST_AGENT_VERSION = "v1.5.0"
 
 [[d1_databases]]
 binding = "DB"
-database_name = "${D1_DATABASE_NAME}" # 使用占位符
-database_id = "${D1_DATABASE_ID}" # 使用占位符
+database_name = "xugou_db"
+database_id = "ce02ba77-23e3-4c93-93d6-c2bcec1d0e08"
 migrations_table = "migrations"
 migrations_dir = "backend/drizzle"
 
@@ -116,6 +120,7 @@ deleted_classes = ["MetricsBroadcaster"]
 binding = "ASSETS"
 directory = "frontend/dist"
 not_found_handling = "single-page-application"
+run_worker_first = ["/api/*"]
 
 [version_metadata]
 binding = "CF_VERSION_METADATA"

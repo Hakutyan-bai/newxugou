@@ -3,6 +3,7 @@
   "version": "1.5.1",
   "description": "Xugou monitoring system",
   "private": true,
+  "packageManager": "pnpm@11.10.0",
   "scripts": {
     "dev:frontend": "cd frontend && pnpm run dev",
     "dev:backend": "cd backend && pnpm run dev",
@@ -15,6 +16,8 @@
     "build": "pnpm run build:frontend && pnpm run build:backend",
     "deploy:dry-run": "wrangler deploy --dry-run",
     "deploy": "wrangler deploy",
+    "deploy:production": "wrangler d1 migrations apply xugou_db --remote && wrangler deploy",
+    "ci:check": "pnpm run lint && pnpm run typecheck && pnpm --dir backend test && pnpm run build && pnpm run deploy:dry-run",
     "dev:preview": "pnpm run build && cd backend && pnpm run dev",
     "preview": "cd backend && pnpm run dev",
     "lint": "pnpm --dir backend run lint && pnpm --dir frontend run lint",
